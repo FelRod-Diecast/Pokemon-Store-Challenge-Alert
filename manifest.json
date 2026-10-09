@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "Pokémon Store Challenge Alert",
+  "version": "0.1.0",
+  "description": "Alerts you when a supported retailer page asks you to complete a human-verification challenge.",
+  "permissions": ["notifications", "storage", "tabs"],
+  "host_permissions": [
+    "https://www.target.com/*",
+    "https://target.com/*",
+    "https://www.costco.com/*",
+    "https://costco.com/*",
+    "https://www.samsclub.com/*",
+    "https://samsclub.com/*"
+  ],
+  "background": { "service_worker": "background.js" },
+  "action": {
+    "default_title": "Pokémon Store Challenge Alert",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [{
+    "matches": [
+      "https://www.target.com/*",
+      "https://target.com/*",
+      "https://www.costco.com/*",
+      "https://costco.com/*",
+      "https://www.samsclub.com/*",
+      "https://samsclub.com/*"
+    ],
+    "js": ["content.js"],
+    "run_at": "document_idle"
+  }]
+}

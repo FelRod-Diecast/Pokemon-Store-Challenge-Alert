@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pokémon Store Challenge Alert</title>
+  <style>
+    body { width: 350px; margin: 0; padding: 16px; font: 14px/1.45 system-ui, sans-serif; color: #18212f; background: #f5f7fb; }
+    h1 { font-size: 17px; margin: 0 0 4px; }
+    .sub { color: #526174; margin-bottom: 14px; }
+    .status { padding: 10px 12px; background: #e6f6ed; border-radius: 8px; margin-bottom: 12px; }
+    .status strong { color: #17643a; }
+    .actions { display: flex; gap: 8px; margin-bottom: 14px; }
+    button { border: 0; border-radius: 7px; padding: 9px 10px; cursor: pointer; background: #174ea6; color: white; font-weight: 600; }
+    button.secondary { background: #e1e8f2; color: #233247; }
+    .entry { background: white; border: 1px solid #dce3ec; border-radius: 8px; padding: 10px; margin: 8px 0; overflow-wrap: anywhere; }
+    .entry strong { display: block; margin-bottom: 3px; }
+    .entry small { color: #5a687b; }
+    a { color: #174ea6; }
+    .empty { color: #526174; padding: 12px 0; }
+    footer { color: #64748b; font-size: 11px; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <h1>Pokémon Store Challenge Alert</h1>
+  <div class="sub">Target · Costco · Sam's Club</div>
+  <div class="status"><strong>Monitoring enabled</strong><br>Open retailer tabs are checked for recognizable verification prompts.</div>
+  <div class="actions">
+    <button id="test">Test desktop alert</button>
+    <button id="refresh" class="secondary">Refresh</button>
+  </div>
+  <h2 style="font-size:14px">Recent challenges</h2>
+  <div id="items" class="empty">Loading status…</div>
+  <footer>Detection is best-effort. Complete any CAPTCHA yourself; this extension does not solve or bypass challenges.</footer>
+  <script src="popup.js"></script>
+</body>
+</html>

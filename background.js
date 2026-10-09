@@ -1,4 +1,5 @@
 const activeChallenges = new Map();
+let iconDataUrlPromise;
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message?.type === "CHALLENGE_DETECTED") {
@@ -22,17 +23,61 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
   if (message?.type === "TEST_NOTIFICATION") {
-    chrome.notifications.create("challenge-test", {
-      type: "basic",
-      iconUrl: "icon.svg",
+    showNotification("challenge-test", {
       title: "Challenge Alert test",
-      message: "Desktop notifications are working. This is only a test.",
-      priority: 2
+      message: "Desktop notifications are working. This is only a test."
     }).then(() => sendResponse({ ok: true }))
       .catch(() => sendResponse({ ok: false }));
     return true;
   }
 });
+
+async function getIconDataUrl() {
+  if (!iconDataUrlPromise) {
+    iconDataUrlPromise = (async () => {
+      const canvas = new OffscreenCanvas(128, 128);
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#174ea6";
+      ctx.fillRect(0, 0, 128, 128);
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(64, 64, 39, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#1f2937";
+      ctx.fillRect(23, 59, 82, 10);
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(64, 64, 14, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "#1f2937";
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.arc(64, 64, 14, 0, Math.PI * 2);
+      ctx.stroke();
+      const blob = await canvas.convertToBlob({ type: "image/png" });
+      const bytes = new Uint8Array(await blob.arrayBuffer());
+      let binary = "";
+      for (let i = 0; i < bytes.length; i += 8192) {
+        binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
+      }
+      return "data:image/png;base64," + btoa(binary);
+    })();
+  }
+  return iconDataUrlPromise;
+}
+
+async function showNotification(id, details) {
+  const iconUrl = await getIconDataUrl();
+  await chrome.notifications.create(id, {
+    type: "basic",
+    iconUrl,
+    title: details.title,
+    message: details.message,
+    contextMessage: details.contextMessage || "",
+    priority: 2,
+    requireInteraction: true
+  });
+}
 
 async function handleChallenge(message, sender) {
   const tabId = sender.tab?.id;
@@ -55,14 +100,10 @@ async function handleChallenge(message, sender) {
   const paused = [tabId, ...data.pausedTabs.filter((id) => id !== tabId)];
   await chrome.storage.local.set({ challengeLog: log, pausedTabs: paused });
 
-  await chrome.notifications.create("challenge-" + tabId, {
-    type: "basic",
-    iconUrl: "icon.svg",
+  await showNotification("challenge-" + tabId, {
     title: "Verification needed — " + item.store,
     message: "Open the retailer tab and complete the check yourself. Click this alert to switch to it.",
-    contextMessage: item.title.slice(0, 120),
-    priority: 2,
-    requireInteraction: true
+    contextMessage: item.title.slice(0, 120)
   });
 }
 

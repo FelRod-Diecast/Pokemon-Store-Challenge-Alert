@@ -30,7 +30,6 @@
   function pageText() {
     const body = document.body;
     if (!body) return "";
-    // Bound the text read to avoid scanning huge retailer pages repeatedly.
     return (body.innerText || body.textContent || "").slice(0, 180000);
   }
 
@@ -38,16 +37,14 @@
     const text = pageText();
     if (!text) return false;
 
-    // CAPTCHA iframe/widget markers are strong signals even when the prompt text
-    // is rendered inside a cross-origin frame and cannot be read by this script.
     const widget = document.querySelector(
       'iframe[src*="captcha" i], iframe[src*="recaptcha" i], iframe[src*="hcaptcha" i], ' +
       '[id*="captcha" i], [class*="captcha" i], [data-testid*="captcha" i]'
     );
+    const visibleWidget = Boolean(widget && widget.getClientRects().length > 0);
     const matchingText = challengePatterns.some((pattern) => pattern.test(text));
     if (!matchingText) return false;
 
-    // Avoid alerts for pages that merely mention CAPTCHA in help/legal copy.
     const compactText = text.toLowerCase();
     const explicitPrompt = [
       "verify you are human", "verify that you are human",
@@ -57,7 +54,9 @@
       "prove you are human", "confirm you are not a robot"
     ].some((phrase) => compactText.includes(phrase));
 
-    return Boolean(widget || explicitPrompt || matchingText);
+    // A generic mention of CAPTCHA in legal/help text is not enough by itself.
+    const challengeContext = /captcha|recaptcha|hcaptcha|verify|robot|human|security check|puzzle|unusual traffic/i.test(text);
+    return explicitPrompt || (visibleWidget && challengeContext);
   }
 
   function check() {

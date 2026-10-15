@@ -17,6 +17,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }).catch(() => sendResponse({ challengeLog: [], pausedTabs: [], monitoring: true }));
     return true;
   }
+  if (message?.type === "CLEAR_LOG") {
+    clearChallengeLog().then(() => sendResponse({ ok: true }))
+      .catch(() => sendResponse({ ok: false }));
+    return true;
+  }
   if (message?.type === "ACK_CHALLENGE") {
     acknowledgeChallenge(message.tabId).then(() => sendResponse({ ok: true }))
       .catch(() => sendResponse({ ok: false }));
@@ -105,6 +110,12 @@ async function handleChallenge(message, sender) {
     message: "Open the retailer tab and complete the check yourself. Click this alert to switch to it.",
     contextMessage: item.title.slice(0, 120)
   });
+}
+
+async function clearChallengeLog() {
+  const data = await chrome.storage.local.get({ challengeLog: [], pausedTabs: [] });
+  for (const entry of data.challengeLog) activeChallenges.delete(entry.tabId);
+  await chrome.storage.local.set({ challengeLog: [], pausedTabs: [] });
 }
 
 async function acknowledgeChallenge(tabId) {

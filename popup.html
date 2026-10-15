@@ -5,33 +5,104 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Pokémon Store Challenge Alert</title>
   <style>
-    body { width: 350px; margin: 0; padding: 16px; font: 14px/1.45 system-ui, sans-serif; color: #18212f; background: #f5f7fb; }
-    h1 { font-size: 17px; margin: 0 0 4px; }
-    .sub { color: #526174; margin-bottom: 14px; }
-    .status { padding: 10px 12px; background: #e6f6ed; border-radius: 8px; margin-bottom: 12px; }
-    .status strong { color: #17643a; }
-    .actions { display: flex; gap: 8px; margin-bottom: 14px; }
-    button { border: 0; border-radius: 7px; padding: 9px 10px; cursor: pointer; background: #174ea6; color: white; font-weight: 600; }
-    button.secondary { background: #e1e8f2; color: #233247; }
-    .entry { background: white; border: 1px solid #dce3ec; border-radius: 8px; padding: 10px; margin: 8px 0; overflow-wrap: anywhere; }
-    .entry strong { display: block; margin-bottom: 3px; }
-    .entry small { color: #5a687b; }
-    a { color: #174ea6; }
-    .empty { color: #526174; padding: 12px 0; }
-    footer { color: #64748b; font-size: 11px; margin-top: 12px; }
+    :root { color-scheme: dark; --bg:#0b0c10; --panel:#1f2833; --line:#334155; --muted:#a7b4c5; --accent:#66fcf1; --blue:#2563eb; }
+    * { box-sizing:border-box; }
+    body { width:600px; min-height:420px; max-height:700px; overflow:auto; margin:0; padding:14px; color:#f8fafc; background:var(--bg); font:13px/1.45 "Segoe UI",system-ui,sans-serif; }
+    header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; }
+    h1 { margin:0; font-size:20px; color:var(--accent); }
+    .subtitle { color:var(--muted); font-size:11px; margin-top:2px; }
+    button, input, select { font:inherit; }
+    button { border:1px solid var(--line); border-radius:7px; padding:8px 10px; cursor:pointer; color:#fff; background:#263547; font-weight:600; }
+    button:hover { border-color:var(--accent); }
+    button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
+    .primary { background:#147d78; border-color:#147d78; }
+    .danger { background:#542a32; border-color:#7f3643; }
+    .toolbar { display:flex; gap:8px; flex-wrap:wrap; }
+    .status { border:1px solid #235a45; background:#102b24; border-radius:8px; padding:9px 11px; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .status strong { color:#8af0bd; }
+    .status small { color:var(--muted); display:block; }
+    .dashboard-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-bottom:12px; }
+    .metric { min-height:68px; text-align:left; background:var(--panel); padding:10px; }
+    .metric[aria-pressed="true"] { border-color:var(--accent); box-shadow:inset 0 0 0 1px var(--accent); }
+    .metric-label { display:block; color:var(--muted); font-size:11px; margin-bottom:4px; }
+    .metric-count { font-size:22px; font-weight:750; }
+    .controls { background:#111820; border:1px solid #263547; border-radius:9px; padding:10px; margin-bottom:12px; }
+    .filters { display:grid; grid-template-columns:1fr 145px 145px; gap:8px; }
+    input, select { width:100%; min-width:0; color:#f8fafc; background:#0b0c10; border:1px solid #3a4a5e; border-radius:6px; padding:9px; }
+    .filter-row { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-top:9px; }
+    .filter-row label { color:var(--muted); display:flex; align-items:center; gap:6px; }
+    .filter-row input[type=checkbox] { width:auto; }
+    h2 { margin:0; font-size:14px; }
+    .results-head { display:flex; justify-content:space-between; align-items:center; margin:10px 0 6px; gap:8px; }
+    #resultCount { color:var(--muted); font-size:11px; }
+    #items { display:grid; gap:8px; }
+    .entry { background:var(--panel); border:1px solid #2f4154; border-radius:8px; padding:11px; min-width:0; }
+    .entry-top { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+    .entry strong { font-size:13px; overflow-wrap:anywhere; }
+    .entry-title { margin:5px 0; overflow-wrap:anywhere; }
+    .entry-meta { color:var(--muted); font-size:11px; overflow-wrap:anywhere; }
+    .pill { display:inline-block; flex-shrink:0; border-radius:20px; padding:3px 7px; background:#563b18; color:#ffd68a; font-size:10px; font-weight:750; }
+    .pill.resolved { background:#163e30; color:#9cf0c4; }
+    .entry-actions { display:flex; gap:12px; flex-wrap:wrap; margin-top:9px; }
+    a { color:var(--accent); text-decoration:none; cursor:pointer; }
+    a:hover { text-decoration:underline; }
+    .empty { color:var(--muted); border:1px dashed #3a4a5e; border-radius:8px; padding:22px 14px; text-align:center; }
+    footer { color:#7f8da1; font-size:10px; margin-top:12px; border-top:1px solid #263547; padding-top:9px; }
+    #notice { min-height:16px; color:var(--accent); font-size:11px; margin-top:5px; }
+    @media (max-width:560px) { body { width:100%; } .filters { grid-template-columns:1fr 1fr; } .filters input { grid-column:1/-1; } }
   </style>
 </head>
 <body>
-  <h1>Pokémon Store Challenge Alert</h1>
-  <div class="sub">Target · Costco · Sam's Club</div>
-  <div class="status"><strong>Monitoring enabled</strong><br>Open retailer tabs are checked for recognizable verification prompts.</div>
-  <div class="actions">
-    <button id="test">Test desktop alert</button>
-    <button id="refresh" class="secondary">Refresh</button>
-  </div>
-  <h2 style="font-size:14px">Recent challenges</h2>
-  <div id="items" class="empty">Loading status…</div>
-  <footer>Detection is best-effort. Complete any CAPTCHA yourself; this extension does not solve or bypass challenges.</footer>
+  <header>
+    <div>
+      <h1>Pokémon Store Challenge Alert</h1>
+      <div class="subtitle">Target · Costco · Sam’s Club · Interactive challenge dashboard</div>
+    </div>
+    <div class="toolbar">
+      <button id="test" class="primary" title="Send a test desktop notification">Test alert</button>
+      <button id="refresh" title="Reload challenge history">↻</button>
+    </div>
+  </header>
+
+  <section class="status" aria-live="polite">
+    <div><strong id="monitorTitle">Challenge monitoring</strong><small id="monitorDetail">Checking saved challenge history…</small></div>
+    <span id="monitorBadge">READY</span>
+  </section>
+
+  <section class="dashboard-grid" aria-label="Challenge counts">
+    <button class="metric" data-filter="ALL" aria-pressed="true"><span class="metric-label">All events</span><span class="metric-count" id="countAll">0</span></button>
+    <button class="metric" data-filter="ACTION NEEDED" aria-pressed="false"><span class="metric-label">Needs attention</span><span class="metric-count" id="countAction">0</span></button>
+    <button class="metric" data-filter="MARKED RESUMED" aria-pressed="false"><span class="metric-label">Marked handled</span><span class="metric-count" id="countResolved">0</span></button>
+  </section>
+
+  <section class="controls" aria-label="Search and filters">
+    <div class="filters">
+      <input id="searchBox" type="search" placeholder="Search store, page title, or URL…" aria-label="Search challenge history">
+      <select id="storeFilter" aria-label="Filter by retailer">
+        <option value="ALL">All retailers</option>
+        <option value="Target">Target</option>
+        <option value="Costco">Costco</option>
+        <option value="Sam's Club">Sam's Club</option>
+      </select>
+      <select id="sortBy" aria-label="Sort challenge history">
+        <option value="newest">Newest first</option>
+        <option value="oldest">Oldest first</option>
+        <option value="store">Retailer A–Z</option>
+        <option value="status">Status</option>
+        <option value="title">Page title A–Z</option>
+      </select>
+    </div>
+    <div class="filter-row">
+      <label><input id="showResolved" type="checkbox" checked> Include handled events</label>
+      <button id="clearLog" class="danger" title="Delete saved challenge history">Clear history</button>
+    </div>
+    <div id="notice" role="status" aria-live="polite"></div>
+  </section>
+
+  <div class="results-head"><h2 id="resultsTitle">Challenge history</h2><span id="resultCount">0 events</span></div>
+  <div id="items" aria-live="polite"><div class="empty">Loading challenge history…</div></div>
+
+  <footer>Detection is best-effort. This extension never solves or bypasses verification; complete any challenge yourself. History is stored locally in your browser.</footer>
   <script src="popup.js"></script>
 </body>
 </html>

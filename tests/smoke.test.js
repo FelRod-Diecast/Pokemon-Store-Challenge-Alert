@@ -38,3 +38,25 @@ test("popup exposes test notification and manual acknowledgement", () => {
   assert.match(popup, /ACK_CHALLENGE/);
   assert.match(popup, /MARKED RESUMED/);
 });
+
+test("interactive popup exposes search, retailer filter, sorting, and clickable status counters", () => {
+  const html = fs.readFileSync(path.join(root, "popup.html"), "utf8");
+  for (const id of ["searchBox", "storeFilter", "sortBy", "showResolved", "clearLog", "countAll", "countAction", "countResolved"]) {
+    assert.match(html, new RegExp('id="' + id + '"'));
+  }
+  assert.match(popup, /data-filter/);
+  assert.match(popup, /filteredItems/);
+  assert.match(popup, /case "oldest"/);
+  assert.match(popup, /case "store"/);
+  assert.match(popup, /case "status"/);
+  assert.match(popup, /case "title"/);
+  assert.match(popup, /async function loadPreferences\(\)/);
+  assert.match(popup, /popupShowResolved/);
+  assert.match(popup, /function savePreferences\(\)/);
+});
+
+test("clear-history action is handled by the background and clears persisted history", () => {
+  assert.match(background, /message\?\.type === "CLEAR_LOG"/);
+  assert.match(background, /async function clearChallengeLog\(\)/);
+  assert.match(background, /chrome\.storage\.local\.set\(\{ challengeLog: \[\], pausedTabs: \[\] \}\)/);
+});

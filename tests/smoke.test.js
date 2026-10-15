@@ -49,7 +49,10 @@ test("interactive popup exposes search, retailer filter, sorting, and clickable 
   assert.match(popup, /case "oldest"/);
   assert.match(popup, /case "store"/);
   assert.match(popup, /case "status"/);
-  assert.match(popup, /case "title"/);\n  assert.match(popup, /async function loadPreferences\(\)/);\n  assert.match(popup, /popupShowResolved/);\n  assert.match(popup, /function savePreferences\(\)/);
+  assert.match(popup, /case "title"/);
+  assert.match(popup, /async function loadPreferences\(\)/);
+  assert.match(popup, /popupShowResolved/);
+  assert.match(popup, /function savePreferences\(\)/);
 });
 
 test("clear-history action is handled by the background and clears persisted history", () => {

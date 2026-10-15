@@ -38,6 +38,26 @@
     }
   }
 
+  async function loadPreferences() {
+    const prefs = await chrome.storage.local.get({
+      popupFilter: "ALL", popupSearch: "", popupStore: "ALL",
+      popupSort: "newest", popupShowResolved: true
+    });
+    activeFilter = ["ALL", "ACTION NEEDED", "MARKED RESUMED"].includes(prefs.popupFilter) ? prefs.popupFilter : "ALL";
+    searchBox.value = String(prefs.popupSearch || "");
+    storeFilter.value = ["ALL", "Target", "Costco", "Sam's Club"].includes(prefs.popupStore) ? prefs.popupStore : "ALL";
+    sortBy.value = ["newest", "oldest", "store", "status", "title"].includes(prefs.popupSort) ? prefs.popupSort : "newest";
+    showResolved.checked = prefs.popupShowResolved !== false;
+  }
+
+  function savePreferences() {
+    return chrome.storage.local.set({
+      popupFilter: activeFilter, popupSearch: searchBox.value,
+      popupStore: storeFilter.value, popupSort: sortBy.value,
+      popupShowResolved: showResolved.checked
+    }).catch(() => {});
+  }
+
   function renderCounts() {
     $("countAll").textContent = allItems.length;
     $("countAction").textContent = allItems.filter((item) => item.status !== "MARKED RESUMED").length;
@@ -141,11 +161,12 @@
     button.addEventListener("click", () => {
       activeFilter = button.dataset.filter;
       render();
+      savePreferences();
     });
   });
-  [searchBox, storeFilter, sortBy, showResolved].forEach((control) => {
-    control.addEventListener("input", render);
-    control.addEventListener("change", render);
+  searchBox.addEventListener("input", () => { render(); savePreferences(); });
+  [storeFilter, sortBy, showResolved].forEach((control) => {
+    control.addEventListener("change", () => { render(); savePreferences(); });
   });
   $("refresh").addEventListener("click", loadStatus);
   $("test").addEventListener("click", async () => {
@@ -165,5 +186,5 @@
     }
   });
 
-  loadStatus();
+  loadPreferences().then(loadStatus).catch(loadStatus);
 })();

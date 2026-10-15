@@ -17,7 +17,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }).catch(() => sendResponse({ challengeLog: [], pausedTabs: [], monitoring: true }));
     return true;
   }
-  if (message?.type === "CLEAR_LOG") {\n    clearChallengeLog().then(() => sendResponse({ ok: true }))\n      .catch(() => sendResponse({ ok: false }));\n    return true;\n  }\n  if (message?.type === "ACK_CHALLENGE") {
+  if (message?.type === "CLEAR_LOG") {
+    clearChallengeLog().then(() => sendResponse({ ok: true }))
+      .catch(() => sendResponse({ ok: false }));
+    return true;
+  }
+  if (message?.type === "ACK_CHALLENGE") {
     acknowledgeChallenge(message.tabId).then(() => sendResponse({ ok: true }))
       .catch(() => sendResponse({ ok: false }));
     return true;
@@ -107,7 +112,13 @@ async function handleChallenge(message, sender) {
   });
 }
 
-async function clearChallengeLog() {\n  const data = await chrome.storage.local.get({ challengeLog: [], pausedTabs: [] });\n  for (const entry of data.challengeLog) activeChallenges.delete(entry.tabId);\n  await chrome.storage.local.set({ challengeLog: [], pausedTabs: [] });\n}\n\nasync function acknowledgeChallenge(tabId) {
+async function clearChallengeLog() {
+  const data = await chrome.storage.local.get({ challengeLog: [], pausedTabs: [] });
+  for (const entry of data.challengeLog) activeChallenges.delete(entry.tabId);
+  await chrome.storage.local.set({ challengeLog: [], pausedTabs: [] });
+}
+
+async function acknowledgeChallenge(tabId) {
   const data = await chrome.storage.local.get({ challengeLog: [], pausedTabs: [] });
   const log = data.challengeLog.map((entry) =>
     entry.tabId === tabId ? { ...entry, status: "MARKED RESUMED" } : entry
